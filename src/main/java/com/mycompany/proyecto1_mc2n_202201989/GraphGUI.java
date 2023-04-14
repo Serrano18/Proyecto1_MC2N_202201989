@@ -28,7 +28,7 @@ public class GraphGUI extends JFrame implements ActionListener {
       public static Point secondVertex = null;
 
      public GraphGUI() {
-        super("Graph GUI");
+        super("PROYECTO 1 - GRAFOS");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1000, 800);
         JPanel topPanel = new JPanel();
@@ -53,12 +53,12 @@ public class GraphGUI extends JFrame implements ActionListener {
         destTxt = new JTextField(5);
         searchBtn = new JButton("Camino Simple");
         searchBtn.addActionListener(this);
-        bottomPanel.add(sourceLbl, BorderLayout.WEST);
-        bottomPanel.add(sourceTxt, BorderLayout.CENTER);
-        bottomPanel.add(destLbl, BorderLayout.EAST);
-        bottomPanel.add(destTxt, BorderLayout.LINE_END);
-        bottomPanel.add(searchBtn, BorderLayout.SOUTH);
-        bottomPanel.add(Box.createVerticalStrut(40)); 
+        bottomPanel.add(sourceLbl);
+        bottomPanel.add(sourceTxt);
+        bottomPanel.add(destLbl);
+        bottomPanel.add(destTxt);
+        bottomPanel.add(searchBtn);
+        bottomPanel.add(Box.createVerticalStrut(100)); 
         content= new JLabel("Recorrido:");
         recorridoLbl = new JLabel("");
         bottomPanel.add(content, BorderLayout.PAGE_START);
