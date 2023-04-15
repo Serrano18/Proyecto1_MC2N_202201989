@@ -63,8 +63,6 @@ public class GraphPanel extends JPanel{
             }
         }
     }
-
- 
       public void addEdge(Point p1, Point p2) {
          Point closest1 = getClosestVertex((int) p1.getX(), (int) p1.getY());
          Point closest2 = getClosestVertex((int) p2.getX(), (int) p2.getY());
