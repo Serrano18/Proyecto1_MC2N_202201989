@@ -63,19 +63,21 @@ public class GraphPanel extends JPanel{
             }
         }
     }
-      public void addEdge(Point p1, Point p2) {
-         Point closest1 = getClosestVertex((int) p1.getX(), (int) p1.getY());
-         Point closest2 = getClosestVertex((int) p2.getX(), (int) p2.getY());
-         if (closest1 != null && closest2 != null) {
-            int u = vertices.indexOf(closest1);
-            int v = vertices.indexOf(closest2);
-            int[] edge1 = {u, v};
-            int[] edge2 = {v, u};
-             edges.add(edge1);
-           edges.add(edge2);
-           repaint();
-         }
-        }
+    public void addEdge(Point p1, Point p2) {
+    Point closest1 = getClosestVertex((int) p1.getX(), (int) p1.getY());
+    Point closest2 = getClosestVertex((int) p2.getX(), (int) p2.getY());
+    if (closest1 != null && closest2 != null) {
+        Point node1 = selectedVertex.get(0);
+        Point node2 = selectedVertex.get(1);
+        int[] edge = {vertices.indexOf(node1.getLocation()), vertices.indexOf(node2.getLocation()), getDistance(node1, node2)};
+        edges.add(edge);
+        selectedVertex.clear();
+        repaint();
+    }
+}
+    private int getDistance(Point p1, Point p2) {
+    return (int) Math.sqrt(Math.pow(p1.getX() - p2.getX(), 2) + Math.pow(p1.getY() - p2.getY(), 2));
+}
         private Point getClosestVertex(int x, int y) {
           double minDistance = Double.MAX_VALUE;
             Point closestVertex = null;
@@ -128,29 +130,28 @@ public class GraphPanel extends JPanel{
     // Dibujar el camino encontrado con una línea más gruesa
     g2d.setColor(Color.RED);
     g2d.setStroke(new BasicStroke(3)); // Grosor de la línea
-        for (int i = 0; i < path.size() - 1; i++) {
+        for (int i = 0; i < path.size()-1; i++) {
             Point u = path.get(i);
             Point v = path.get(i + 1);
             g2d.drawLine(u.x, u.y, v.x, v.y);
         }
     }
-        public ArrayList<Point> findShortestPath(Point start, Point end) {
+    
+     public ArrayList<Point> findShortestPath(Point start, Point end) {
         // Mapa de distancia y vértices previos
         HashMap<Point, Double> distance = new HashMap<>();
         HashMap<Point, Point> previousVertex = new HashMap<>();
-
         // Inicializar todas las distancias como infinitas y los vértices previos como nulos
         for (Point vertex : vertices) {
-            distance.put(vertex, Double.MAX_VALUE);
+          //  distance.put(vertex, Double.MAX_VALUE);
+            //previousVertex.put(vertex, null);
+            distance.put(vertex, Double.POSITIVE_INFINITY);
             previousVertex.put(vertex, null);
         }
-
         // La distancia al vértice de inicio es 0
         distance.put(start, 0.0);
-
         // Conjunto de vértices no visitados
         HashSet<Point> unvisited = new HashSet<>(vertices);
-
         while (!unvisited.isEmpty()) {
             // Encontrar el vértice no visitado más cercano
             Point current = null;
@@ -161,15 +162,12 @@ public class GraphPanel extends JPanel{
                     current = vertex;
                 }
             }
-
             // Si el vértice más cercano es el vértice final, se ha encontrado el camino más corto
             if (current.equals(end)) {
                 break;
             }
-
             // Eliminar el vértice más cercano del conjunto de no visitados
             unvisited.remove(current);
-
             // Actualizar las distancias y los vértices previos para los vecinos no visitados del vértice actual
             for (int[] edge : edges) {
                 Point u = vertices.get(edge[0]);
@@ -193,7 +191,6 @@ public class GraphPanel extends JPanel{
                 }
             }
         }
-
         // Reconstruir el camino más corto desde el vértice final al vértice de inicio
         ArrayList<Point> path = new ArrayList<>();
         Point current = end;
@@ -208,7 +205,6 @@ public class GraphPanel extends JPanel{
     }
     public String setPath(ArrayList<Point> path) {
         this.path = path;
-     
         String pathString = "";
         for (int i = 0; i < path.size(); i++) {
             Point vertex = path.get(i);
@@ -217,12 +213,68 @@ public class GraphPanel extends JPanel{
                 pathString += "->";
             }
         }
-        
         repaint();
         return pathString;
     }
-    // Método auxiliar para obtener la distancia entre dos vértices
-    private double getDistance(Point u, Point v) {
-        return Math.sqrt(Math.pow(u.x - v.x, 2) + Math.pow(u.y - v.y, 2));
-    }  
+  
+    public ArrayList<Point> findSecondShortestPath(Point start, Point end) {
+    // Encontrar el camino más corto
+    ArrayList<Point> shortestPath = findShortestPath(start, end);
+    int shortestDistance = calculatePathDistance(shortestPath);
+
+    // Eliminar una por una las aristas del camino más corto y buscar el siguiente camino más corto
+    ArrayList<Point> secondShortestPath = null;
+    int secondShortestDistance = Integer.MAX_VALUE;
+    for (int i = 0; i < shortestPath.size() - 1; i++) {
+        // Eliminar la arista i del camino más corto
+        Point node1 = shortestPath.get(i);
+        Point node2 = shortestPath.get(i + 1);
+        edges.removeIf(edge -> (edge[0] == vertices.indexOf(node1) && edge[1] == vertices.indexOf(node2)) ||
+                                (edge[0] == vertices.indexOf(node2) && edge[1] == vertices.indexOf(node1)));
+
+        // Buscar el camino más corto después de eliminar la arista i
+        ArrayList<Point> path = findShortestPath(start, end);
+        int distance = calculatePathDistance(path);
+
+        // Actualizar el camino más corto y su distancia si es necesario
+        if (distance < secondShortestDistance && !path.equals(shortestPath)) {
+            secondShortestPath = path;
+            secondShortestDistance = distance;
+        }
+
+        // Restaurar la arista i en el grafo
+        edges.add(new int[] { vertices.indexOf(node1), vertices.indexOf(node2), getDistance(node1, node2) });
+    }
+
+    // Si no se encontró un segundo camino más corto, devolver null
+    if (secondShortestPath == null) {
+        return null;
+    }
+
+    // Retornar el segundo camino más corto encontrado
+    return secondShortestPath;
+}
+
+    private int getDistance(int u, int v) {
+        Point pu = vertices.get(u);
+        Point pv = vertices.get(v);
+        return (int) Math.sqrt(Math.pow(pu.x - pv.x, 2) + Math.pow(pu.y - pv.y, 2));
+    }
+    public int calculatePathDistance(ArrayList<Point> path) {
+    int distance = 0;
+    for (int i = 0; i < path.size() - 1; i++) {
+        int currentNodeIndex = vertices.indexOf(path.get(i));
+        int nextNodeIndex = vertices.indexOf(path.get(i + 1));
+        distance += getDistance(currentNodeIndex, nextNodeIndex);
+    }
+    return distance;
+}
+    
+    
+
+
+
+
+
+
 }

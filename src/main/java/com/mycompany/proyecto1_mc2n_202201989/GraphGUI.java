@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -30,7 +31,7 @@ public class GraphGUI extends JFrame implements ActionListener {
     private JToggleButton addEdgeToggle;
      public static Point firstVertex = null;
       public static Point secondVertex = null;
-
+      public ArrayList<Point> shortestPath;
      public GraphGUI() {
         super("PROYECTO 1 - GRAFOS");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -121,11 +122,14 @@ public class GraphGUI extends JFrame implements ActionListener {
             String destStr = destTxt.getText();
             Point vertex = graphPanel.getVertexByLabel(sourceStr.charAt(0));
              Point vertex2 = graphPanel.getVertexByLabel(destStr.charAt(0));
-           if (vertex != null && vertex2 != null) {
+                           if (vertex != null && vertex2 != null) {
                 JOptionPane.showMessageDialog(this, "Vertices encontrados");
                 try{
-                    String pathString = graphPanel.setPath(graphPanel.findShortestPath(vertex, vertex2));
-               recorridoLbl.setText(pathString);
+                   shortestPath = graphPanel.findShortestPath(vertex, vertex2);
+                    String pathString = graphPanel.setPath(shortestPath);
+                    recorridoLbl.setText(pathString);
+               
+                System.out.println("El camino más corto es: " + shortestPath);
                 }catch(Exception ex){
                  JOptionPane.showMessageDialog(null, "No se puede encontrar el camino ingrese nuevos vertices");
                   sourceTxt.setText("");
@@ -136,7 +140,31 @@ public class GraphGUI extends JFrame implements ActionListener {
                 sourceTxt.setText("");
                 destTxt.setText("");
             }
-        } else {
+        } else if(e.getSource() == camino1){
+             String sourceStr = sourceTxt.getText();
+            String destStr = destTxt.getText();
+            Point vertex = graphPanel.getVertexByLabel(sourceStr.charAt(0));
+             Point vertex2 = graphPanel.getVertexByLabel(destStr.charAt(0));
+                 
+           if (vertex != null && vertex2 != null) {
+                try{
+                   ArrayList<Point> secondShortestPath = graphPanel.findSecondShortestPath(vertex, vertex2 );
+                         System.out.println("El segundo camino más corto es: " + secondShortestPath);
+                    String pathString = graphPanel.setPath(secondShortestPath);
+                    recorridoLbl.setText(pathString);
+              
+                }catch(Exception ex){
+                 JOptionPane.showMessageDialog(null, "No se puede encontrar el camino ingrese nuevos vertices");
+                  sourceTxt.setText("");
+                  destTxt.setText("");
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Vertice no encontrado Ingrese Nuevamente");
+                sourceTxt.setText("");
+                destTxt.setText("");
+            }
+        }else if(e.getSource() == camino2){
+        }else{
         }
     }
 }
