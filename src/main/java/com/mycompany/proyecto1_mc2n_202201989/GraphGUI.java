@@ -164,6 +164,29 @@ public class GraphGUI extends JFrame implements ActionListener {
                 destTxt.setText("");
             }
         }else if(e.getSource() == camino2){
+             String sourceStr = sourceTxt.getText();
+            String destStr = destTxt.getText();
+            Point vertex = graphPanel.getVertexByLabel(sourceStr.charAt(0));
+             Point vertex2 = graphPanel.getVertexByLabel(destStr.charAt(0));
+                 
+           if (vertex != null && vertex2 != null) {
+                try{
+                    
+                     ArrayList<Point> tercer = graphPanel.findThirdShortestPath(vertex, vertex2 );
+                      System.out.println("El terccer camino más corto es: " + tercer);
+                    String pathString = graphPanel.setPath(tercer);
+                    recorridoLbl.setText(pathString);
+              
+                }catch(Exception ex){
+                 JOptionPane.showMessageDialog(null, "No hay un tercer camino optimo");
+                  sourceTxt.setText("");
+                  destTxt.setText("");
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Vertice no encontrado Ingrese Nuevamente");
+                sourceTxt.setText("");
+                destTxt.setText("");
+            }
         }else{
         }
     }
