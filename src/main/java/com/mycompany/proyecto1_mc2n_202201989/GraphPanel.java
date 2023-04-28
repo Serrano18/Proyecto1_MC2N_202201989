@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
 import javax.swing.JPanel;
 public class GraphPanel extends JPanel{
     private ArrayList<Point> vertices;  // Lista de puntos que representan los vértices del grafo
@@ -270,7 +272,7 @@ public class GraphPanel extends JPanel{
     }
     return distance;
     }  
-
+/*
   public ArrayList<Point> findThirdShortestPath(Point start, Point end) {
     // Encontrar todos los caminos posibles
     ArrayList<ArrayList<Point>> allPaths = findAllPaths(start, end);
@@ -329,5 +331,68 @@ private void findPathsHelper(Point currentNode, Point endNode, ArrayList<Point> 
         }
     }
 }
+*/
+public ArrayList<Point> findThirdShortestPath(Point start, Point end) {
+    // Encontrar todos los caminos posibles
+    ArrayList<ArrayList<Point>> allPaths = findAllPaths(start, end);
+    
+    // Eliminar caminos repetidos
+    HashSet<ArrayList<Point>> distinctPaths = new HashSet<ArrayList<Point>>();
+    distinctPaths.addAll(allPaths);
 
+    // Convertir el conjunto de caminos distintos en una lista
+    ArrayList<ArrayList<Point>> uniquePaths = new ArrayList<ArrayList<Point>>(distinctPaths);
+
+    // Ordenar los caminos por cantidad de vértices
+    uniquePaths.sort(Comparator.comparingInt(ArrayList::size));
+
+    // Seleccionar el tercer camino más corto, si existe
+    if (uniquePaths.size() >= 3) {
+        return uniquePaths.get(3);
+    } else {
+        return null;
+    }
+}
+/*
+private int calculatePathDistance(ArrayList<Point> path) {
+    // Calcular la cantidad de vértices en el camino
+    return path.size() - 1;
+}*/
+
+private ArrayList<ArrayList<Point>> findAllPaths(Point start, Point end) {
+    ArrayList<ArrayList<Point>> allPaths = new ArrayList<ArrayList<Point>>();
+    ArrayList<Point> currentPath = new ArrayList<Point>();
+    currentPath.add(start);
+    HashSet<Point> visitedNodes = new HashSet<Point>();
+    visitedNodes.add(start);
+    findPathsHelper(start, end, currentPath, visitedNodes, allPaths);
+    return allPaths;
+}
+
+private void findPathsHelper(Point currentNode, Point endNode, ArrayList<Point> currentPath,
+                             HashSet<Point> visitedNodes, ArrayList<ArrayList<Point>> allPaths) {
+    // Si se llegó al final, agregar el camino a la lista de caminos encontrados
+    if (currentNode.equals(endNode)) {
+        allPaths.add(new ArrayList<Point>(currentPath));
+        return;
+    }
+
+    // Recorrer todas las aristas que salen del nodo actual
+    for (int[] edge : edges) {
+        if (edge[0] == vertices.indexOf(currentNode) || edge[1] == vertices.indexOf(currentNode)) {
+            Point nextNode = (edge[0] == vertices.indexOf(currentNode)) ?
+                vertices.get(edge[1]) : vertices.get(edge[0]);
+            if (!visitedNodes.contains(nextNode)) {
+                // Agregar el nodo siguiente al camino actual y continuar la búsqueda
+                currentPath.add(nextNode);
+                visitedNodes.add(nextNode);
+                findPathsHelper(nextNode, endNode, currentPath, visitedNodes, allPaths);
+
+                // Eliminar el nodo siguiente del camino actual y del conjunto de nodos visitados
+                currentPath.remove(currentPath.size() - 1);
+                visitedNodes.remove(nextNode);
+            }
+        }
+    }
+}
 }
